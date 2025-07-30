@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AbuseIPDB Threat Lookup</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      padding: 40px;
+    }
+    h1 {
+      color: #333;
+    }
+    input[type="text"] {
+      padding: 10px;
+      width: 300px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .result-box {
+      margin-top: 30px;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      width: 500px;
+    }
+    .result-box h2 {
+      color: #444;
+    }
+    .field {
+      margin-bottom: 10px;
+    }
+    .label {
+      font-weight: bold;
+      color: #555;
+    }
+    .value {
+      color: #222;
+    }
+  </style>
+</head>
+<body>
+
+  <h1> AbuseIPDB Threat Lookup</h1>
+
+  <form id="checkForm">
+    <input type="text" id="query" name="query" placeholder="Enter IP or domain" required>
+    <button type="submit">Check</button>
+  </form>
+
+  <div id="resultBox" class="result-box" style="display:none;">
+    <h2>Threat Report:</h2>
+    <div class="field"><span class="label">IP Address:</span> <span class="value" id="ip"></span></div>
+    <div class="field"><span class="label">Domain:</span> <span class="value" id="domain"></span></div>
+    <div class="field"><span class="label">Country:</span> <span class="value" id="country"></span></div>
+    <div class="field"><span class="label">ISP:</span> <span class="value" id="isp"></span></div>
+    <div class="field"><span class="label">Usage Type:</span> <span class="value" id="usage"></span></div>
+    <div class="field"><span class="label">Abuse Score:</span> <span class="value" id="score"></span></div>
+    <div class="field"><span class="label">Risk Level:</span> <span class="value" id="risk"></span></div>
+    <div class="field"><span class="label">Reports:</span> <span class="value" id="reports"></span></div>
+    <div class="field"><span class="label">Last Reported:</span> <span class="value" id="lastReported"></span></div>
+  </div>
+
+  <script>
+    document.getElementById("checkForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const query = formData.get("query");
+
+      try {
+        const response = await fetch("/check", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          alert("Error: " + data.error);
+          return;
+        }
+
+        document.getElementById("ip").textContent = data.ipAddress;
+        document.getElementById("domain").textContent = data.domain;
+        document.getElementById("country").textContent = data.countryCode;
+        document.getElementById("isp").textContent = data.isp;
+        document.getElementById("usage").textContent = data.usageType;
+        document.getElementById("score").textContent = data.abuseConfidenceScore + " / 100";
+        document.getElementById("risk").textContent = data.riskLevel;
+        document.getElementById("reports").textContent = data.totalReports;
+        document.getElementById("lastReported").textContent = data.lastReportedAt || "Never";
+
+        document.getElementById("resultBox").style.display = "block";
+      } catch (err) {
+        alert("Failed to fetch: " + err.message);
+      }
+    });
+  </script>
+
+</body>
+</html>
